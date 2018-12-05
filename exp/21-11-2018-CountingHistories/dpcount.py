@@ -1,5 +1,6 @@
 import os,sys
 import random
+from trees import *
 
 
 GGD_PREAMBLE = """TYPE=GRAMMAR
@@ -10,7 +11,7 @@ START = H%s
 
 RULES ="""
 
-def createGGDGrammar(k,CancelDups=True,CancelLosses=True):
+"""def createGGDGrammar(k,CancelDups=True,CancelLosses=True):
     n = 2*k+1
     out = GGD_PREAMBLE%n+"\n"
 
@@ -36,68 +37,9 @@ def createGGDGrammar(k,CancelDups=True,CancelLosses=True):
     if CancelLosses:
         for i in range(n-1,0,-1):
             out += "x%s -> ;\n"%(i)
-    return out
+    return out"""
 
-class Node:
-    def __init__(self, children=[], id=-1, time=-1):
-        self.children = children[:]
-        for c in self.children:
-            c.setParent(self)
-        self.id = id
-        self.parent = None
-        self.time = time
-    def getID(self):
-        return self.id
-    def setID(self,id):
-        self.id =  id
-    def getTime(self):
-        return self.time
-
-    def setParent(self,u):
-        self.parent = u
-    def getParent(self):
-        return self.parent
-
-    def isRoot(self):
-        return(self.parent==None)
-    def isBinary(self):
-        return len(self.children)==2
-    def isUnary(self):
-        return len(self.children)==1
-    def isLeaf(self):
-        return len(self.children)==0
-
-    def getChildren(self):
-        return self.children
-    def getLeft(self):
-        assert len(self.children)==2
-        return self.children[0]
-    def getRight(self):
-        assert len(self.children)==2
-        return self.children[1]
-    def getChild(self):
-        assert len(self.children)==1
-        return self.children[0]
-
-    def allNodes(self):
-        res = []
-        for c in self.children:
-            res += c.allNodes()
-        res += [self]
-        return res
-    def getSiblings(self,u):
-        return [v for v in self.children if u!=v]
-    def getIncomparable(self):
-        res = []
-        if not self.isRoot():
-            p = self.getParent()
-            for c in p.getSiblings(self):
-                res += c.allNodes()
-            res += p.getIncomparable()
-        return res
-    def getContemporary(self):
-        return [v for v in self.getIncomparable() if v.getTime() == self.time]
-
+            
 def Ext(u):
     return 1.
 def Loss(u):
@@ -236,34 +178,6 @@ def randGen(u,state="H",n=0,S=[],H=[],D=[],T=[]):
                 return randGen(u,'T',n,S,H,D,T)
     return None
 
-def buildCaterpillar(k):
-    if k==0:
-        return Node()
-    else:
-        return Node([Node(),buildCaterpillar(k-1)])
-
-def buildTimedCaterpillar(k,h=None):
-    if h is None:
-        h=0
-    if k==0:
-        return Node([],-1,h)
-    else:
-        # Single branch
-        u = Node([],-1,h+k)
-        for i in range(h+k-1,h,-1):
-            u = Node([u],-1,i)
-        return Node([u,buildTimedCaterpillar(k-1,h+1)],-1,h)
-
-def labelTree(t,currentID=0):
-    for c in t.getChildren():
-        currentID = labelTree(c,currentID)
-    t.setID(currentID)
-    return currentID+1
-
-def printTree(t,indent=0):
-    print " "*(indent)+"-> %s (t=%s)"%(t.getID(),t.getTime())
-    for c in t.getChildren():
-        printTree(c,indent+1)
 
     
 PATH_GGD = "grammar.ggd"

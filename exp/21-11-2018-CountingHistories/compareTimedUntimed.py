@@ -1,4 +1,4 @@
-import os,stats
+import os
 
 cats = [("TimedTransfer","--timed 1"),("UntimedTransfer","--timed 0"),("TimedNoTransfer","--timed 1 --noTransfers"),("UntimedNoTransfer","--timed 0 --noTransfers")]
 N = 15
