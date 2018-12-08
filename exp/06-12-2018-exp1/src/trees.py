@@ -27,6 +27,18 @@ class Node:
         self.parent = u
     def getParent(self):
         return self.parent
+    def getRoot(self):
+        if self.parent is not None:
+            return self.parent.getRoot()
+        else:
+            return self
+
+    def extendLeft(self):
+        self.children = [Node(self.children),Node()]
+        return self.children
+    def extendRight(self):
+        self.children = [Node(),Node(self.children)]
+        return self.children
 
     def isRoot(self):
         return(self.parent==None)
@@ -76,13 +88,29 @@ class Node:
             return Node(nchildren, self.id, self.time)
         else:
             return None
-
-def copyTree(t):
-    copyChildren = []
-    for child in t.getChildren():
-        copyChildren.append(copyTree(child))
-    newTree = Node(copyChildren,t.getID(),t.getTime())
-    return newTree
+    def copy(self):
+        copyChildren = []
+        for child in self.getChildren():
+            copyChildren.append(child.copy())
+        newTree = Node(copyChildren,self.getID(),self.getTime())
+        return newTree
+    def copy(self):
+        copyChildren = []
+        for child in self.getChildren():
+            copyChildren.append(child.copy())
+        newTree = Node(copyChildren,self.getID(),self.getTime())
+        return newTree
+    def buildUnaryBinary(self,currentTime=0):
+        t = self.getTime()
+        if t>currentTime:
+            return Node([self.buildUnaryBinary(currentTime+1)],-1,currentTime)
+        else:
+            nChildren = []
+            for child in self.getChildren():
+                nChildren.append(child.buildUnaryBinary(currentTime+1))
+            return Node(nChildren,self.getID(),currentTime)
+    def asString(self):
+        return "("+",".join([t.asString() for t in self.children])+")"
         
 def labelTree(t,currentID=0):
     for c in t.getChildren():
@@ -100,7 +128,7 @@ def correctedLength(t):
     return m-((m+1)/2)
 
 def rankTreeRandomly(t):
-    newTree = copyTree(t)
+    newTree = t.copy()
     # Generating a ranking for the internal nodes of a copy of t
     res     = []
     l       = correctedLength(newTree)
@@ -128,25 +156,12 @@ def rankTreeRandomly(t):
         v.setTime(i)
     for v in leaves:
         v.setTime(len(res))
+    printTree(newTree)
     # Inserting unary nodes on the branches of the ranked tree
-    for v in newTree.allNodes():
-        if not v.isRoot():
-            vtime = v.getTime()
-            p     = v.getParent()
-            ptime = p.getTime()
-            currentNode = p
-            for time in range(ptime+1,vtime):
-                newNode = Node([v],-1,time)
-                newNode.setParent(currentNode)
-                newChildren = []
-                for child in currentNode.getChildren():                    
-                    if v == child:
-                        newChildren.append(newNode)
-                    else:
-                        newChildren.append(child)
-                currentNode.setChildren(newChildren)
-                currentNode = newNode
-    # Returning the new tree
+    newTree = newTree.buildUnaryBinary()
+    printTree(newTree)
+    # Labeling nodes in postorder
+    labelTree(newTree)
     return newTree
 
 def buildCaterpillar(k):
@@ -154,6 +169,16 @@ def buildCaterpillar(k):
         return Node()
     else:
         return Node([Node(),buildCaterpillar(k-1)])
+
+def randomBinaryTree(n):
+    nodes = [Node()]
+    while(len(nodes))<n:
+        v = random.choice(nodes)
+        if random.randint(0,1)==0:
+            nodes += v.extendLeft()
+        else:
+            nodes += v.extendRight()
+    return nodes[0].getRoot()            
 
 def newick2Tree(s):
     # Assumption: s is the newick string of a rooted binary tree
