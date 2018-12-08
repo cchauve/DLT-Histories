@@ -178,7 +178,10 @@ def randomBinaryTree(n):
             nodes += v.extendLeft()
         else:
             nodes += v.extendRight()
-    return nodes[0].getRoot()            
+    nroot = nodes[0].getRoot()
+    # Labeling nodes in postorder
+    labelTree(nroot)
+    return nroot
 
 def newick2Tree(s):
     # Assumption: s is the newick string of a rooted binary tree
