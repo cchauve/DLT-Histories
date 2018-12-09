@@ -94,12 +94,14 @@ class Node:
             copyChildren.append(child.copy())
         newTree = Node(copyChildren,self.getID(),self.getTime())
         return newTree
+    
     def copy(self):
         copyChildren = []
         for child in self.getChildren():
             copyChildren.append(child.copy())
         newTree = Node(copyChildren,self.getID(),self.getTime())
         return newTree
+    
     def buildUnaryBinary(self,currentTime=0):
         t = self.getTime()
         if t>currentTime:
@@ -109,8 +111,26 @@ class Node:
             for child in self.getChildren():
                 nChildren.append(child.buildUnaryBinary(currentTime+1))
             return Node(nChildren,self.getID(),currentTime)
+        
     def asString(self):
         return "("+",".join([t.asString() for t in self.children])+")"
+
+    def asNewick(self):
+        newick = ""
+        children   = self.getChildren()
+        nbChildren = len(children)
+        if nbChildren > 0:
+            newick += "("
+        i = 0
+        for child in children:
+            i += 1
+            newick += child.asNewick()
+            if i < nbChildren:
+                newick += ","
+        if nbChildren > 0:
+            newick += ")"
+        newick += str(self.getID())+":"+str(self.getTime())
+        return newick
         
 def labelTree(t,currentID=0):
     for c in t.getChildren():
@@ -151,28 +171,38 @@ def rankTreeRandomly(t):
                         weights[v] = correctedLength(v)
                 break
     # Setting the times/ranks for the nodes and leaves of the copy of t
-    times = {}
+    ranks = {}
     for i,v in enumerate(res):
         v.setTime(i)
+        ranks[v.getID()] = i
     for v in leaves:
         v.setTime(len(res))
+        ranks[v.getID()] = len(res)
     printTree(newTree)
     # Inserting unary nodes on the branches of the ranked tree
     newTree = newTree.buildUnaryBinary()
-    printTree(newTree)
     # Labeling nodes in postorder
     labelTree(newTree)
-    return newTree
+    return (ranks,newTree)
 
+# Build a caterpillar with k leaves
 def buildCaterpillar(k):
-    if k==0:
+    if k == 0:
         return Node()
     else:
         return Node([Node(),buildCaterpillar(k-1)])
 
-def randomBinaryTree(n):
+# Build a complete binary tree of depth h (2^h leaves)
+def buildCompleteTree(h):
+    if h == 0:
+        return Node()
+    else:
+        return Node([buildCompleteTree(h-1),buildCompleteTree(h-1)])
+
+# Build a random binary tree with k leaves
+def randomBinaryTree(k):
     nodes = [Node()]
-    while(len(nodes))<n:
+    while(len(nodes))<2*k-1:
         v = random.choice(nodes)
         if random.randint(0,1)==0:
             nodes += v.extendLeft()
@@ -183,48 +213,48 @@ def randomBinaryTree(n):
     labelTree(nroot)
     return nroot
 
-def newick2Tree(s):
-    # Assumption: s is the newick string of a rooted binary tree
-    if s[0] != "(": # Case 1: tree reduced to a leaf
-        s1 = s.split(':')[0]
-        return Node([],s1,-1)
-    else: # Case 2, tree with a root
-        # Assumption: we are on the opening (
-        i = 1 # Next character
-        # Looking for the left subtree
-        j = i;
-        if s[j] == "(":
-            # We look for the closing parenthesis
-            c = 1
-            while c != 0:
-                j += 1
-                if s[j] == "(":
-                    c += 1
-                elif s[j] == ")":
-                    c -= 1
-            s1 = s[i:j+1]
-            while s[j] != ",":
-                j += 1
-        else:
-            while s[j] != ",":
-                j += 1
-            s1 = s[i:j]
-        # Looking for the right subtree
-        i = j+1
-        j = i
-        if s[j] == "(":
-            # We look for the closing parenthesis
-            c = 1
-            while c != 0:
-                j += 1
-                if s[j] == "(":
-                    c += 1
-                elif s[j] == ")":
-                    c -= 1
-            s2 = s[i:j+1]
-        else:
-            while s[j] != ")":
-                j += 1
-            s2 = s[i:j]
-        # We build the tree
-        return Node([newick2Tree(s1),newick2Tree(s2)])
+# def newick2Tree(s):
+#     # Assumption: s is the newick string of a rooted binary tree
+#     if s[0] != "(": # Case 1: tree reduced to a leaf
+#         s1 = s.split(':')[0]
+#         return Node([],s1,-1)
+#     else: # Case 2, tree with a root
+#         # Assumption: we are on the opening (
+#         i = 1 # Next character
+#         # Looking for the left subtree
+#         j = i;
+#         if s[j] == "(":
+#             # We look for the closing parenthesis
+#             c = 1
+#             while c != 0:
+#                 j += 1
+#                 if s[j] == "(":
+#                     c += 1
+#                 elif s[j] == ")":
+#                     c -= 1
+#             s1 = s[i:j+1]
+#             while s[j] != ",":
+#                 j += 1
+#         else:
+#             while s[j] != ",":
+#                 j += 1
+#             s1 = s[i:j]
+#         # Looking for the right subtree
+#         i = j+1
+#         j = i
+#         if s[j] == "(":
+#             # We look for the closing parenthesis
+#             c = 1
+#             while c != 0:
+#                 j += 1
+#                 if s[j] == "(":
+#                     c += 1
+#                 elif s[j] == ")":
+#                     c -= 1
+#             s2 = s[i:j+1]
+#         else:
+#             while s[j] != ")":
+#                 j += 1
+#             s2 = s[i:j]
+#         # We build the tree
+#         return Node([newick2Tree(s1),newick2Tree(s2)])
