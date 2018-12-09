@@ -114,6 +114,23 @@ class Node:
         
     def asString(self):
         return "("+",".join([t.asString() for t in self.children])+")"
+
+    def asNewick(self):
+        newick = ""
+        children   = self.getChildren()
+        nbChildren = len(children)
+        if nbChildren > 0:
+            newick += "("
+        i = 0
+        for child in children:
+            i += 1
+            newick += child.asNewick()
+            if i < nbChildren:
+                newick += ","
+        if nbChildren > 0:
+            newick += ")"
+        newick += str(self.getID())+":"+str(self.getTime())
+        return newick
         
 def labelTree(t,currentID=0):
     for c in t.getChildren():
@@ -125,23 +142,6 @@ def printTree(t,indent=0):
     print " "*(indent)+"-> %s (t=%s)"%(t.getID(),t.getTime())
     for c in t.getChildren():
         printTree(c,indent+1)
-
-def tree2Newick(t):
-    newick = ""
-    children   = t.getChildren()
-    nbChildren = len(children)
-    if nbChildren > 0:
-        newick += "("
-    i = 0
-    for child in children:
-        i += 1
-        newick += tree2Newick(child)
-        if i < nbChildren:
-            newick += ","
-    if nbChildren > 0:
-        newick += ")"
-    newick += str(t.getID())+":"+str(t.getTime())
-    return newick
 
 def correctedLength(t):
     m = t.getLength()
@@ -171,19 +171,19 @@ def rankTreeRandomly(t):
                         weights[v] = correctedLength(v)
                 break
     # Setting the times/ranks for the nodes and leaves of the copy of t
-    times = {}
+    ranks = {}
     for i,v in enumerate(res):
         v.setTime(i)
-        times[v.getID()] = i
+        ranks[v.getID()] = i
     for v in leaves:
         v.setTime(len(res))
-        times[v.getID()] = len(res)
+        ranks[v.getID()] = len(res)
     printTree(newTree)
     # Inserting unary nodes on the branches of the ranked tree
     newTree = newTree.buildUnaryBinary()
     # Labeling nodes in postorder
     labelTree(newTree)
-    return (times,newTree)
+    return (ranks,newTree)
 
 # Build a caterpillar with k leaves
 def buildCaterpillar(k):
@@ -199,10 +199,10 @@ def buildCompleteTree(h):
     else:
         return Node([buildCompleteTree(h-1),buildCompleteTree(h-1)])
 
-# Build a random binary tree with n leaves
-def randomBinaryTree(n):
+# Build a random binary tree with k leaves
+def randomBinaryTree(k):
     nodes = [Node()]
-    while(len(nodes))<2*n-1:
+    while(len(nodes))<2*k-1:
         v = random.choice(nodes)
         if random.randint(0,1)==0:
             nodes += v.extendLeft()
