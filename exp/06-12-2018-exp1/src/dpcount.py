@@ -65,8 +65,8 @@ def TranLbl(u,v):
 ##def TranLbl(u,v):
 ##    return "T%s"%(u.getTime())
 
-def fillMatrices(tree,N):
-    global ALLOW_TRANSFERS
+def fillMatrices(tree,N,ALLOW_TRANSFERS):
+    #global ALLOW_TRANSFERS
     nodes = tree.allNodes()
     S = [[0 for n in range(N+1)] for u in nodes]
     H = [[0 for n in range(N+1)] for u in nodes]
@@ -105,8 +105,8 @@ def fillMatrices(tree,N):
                 H[i][n] = D[i][n] + S[i][n] + T[i][n]
     return S,H,D,T
 
-def randGen(u,state="H",n=0,S=[],H=[],D=[],T=[]):
-    global ALLOW_TRANSFERS
+def randGen(u,state="H",n=0,S=[],H=[],D=[],T=[],ALLOW_TRANSFERS=False):
+    #global ALLOW_TRANSFERS
     i = u.getID()
     if state == 'D':
         rand = random.random()*D[i][n]

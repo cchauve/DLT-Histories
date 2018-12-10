@@ -177,8 +177,7 @@ def rankTreeRandomly(t):
         ranks[v.getID()] = i
     for v in leaves:
         v.setTime(len(res))
-        ranks[v.getID()] = len(res)
-    printTree(newTree)
+        #ranks[v.getID()] = len(res)
     # Inserting unary nodes on the branches of the ranked tree
     newTree = newTree.buildUnaryBinary()
     # Labeling nodes in postorder
@@ -187,7 +186,7 @@ def rankTreeRandomly(t):
 
 # Build a caterpillar with k leaves
 def buildCaterpillar(k):
-    if k == 0:
+    if k == 1:
         return Node()
     else:
         return Node([Node(),buildCaterpillar(k-1)])
