@@ -115,7 +115,7 @@ class Node:
     def asString(self):
         return "("+",".join([t.asString() for t in self.children])+")"
 
-    def asNewick(self):
+    def asNewick(self,date=False):
         newick = ""
         children   = self.getChildren()
         nbChildren = len(children)
@@ -129,7 +129,9 @@ class Node:
                 newick += ","
         if nbChildren > 0:
             newick += ")"
-        newick += str(self.getID())+":"+str(self.getTime())
+        newick += str(self.getID())
+        if date:
+            newick += ":"+str(self.getTime())
         return newick
         
 def labelTree(t,currentID=0):

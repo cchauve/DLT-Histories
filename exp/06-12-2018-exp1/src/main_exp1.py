@@ -33,13 +33,12 @@ if __name__=="__main__":
     seed       = int(sys.argv[6]) # random seed
     out_file   = sys.argv[7]      # output file
 
-    output = open(out_file,"w")
-    output.write("#command line\t"+str(sys.argv)+"\n")
-    output.write("#size_tree\ttree_index\tranking_type\ttree/ranking\tnumber_of_histories\n")
     random.seed(seed)
-    
+
+    print "Generating trees and rankings",
     TREES       = {}
     for k in range(kMin,kMax+1):
+        print " "+str(k),
         TREES[k] = {}
         caterpillar = buildCaterpillar(k)
         labelTree(caterpillar)
@@ -53,26 +52,42 @@ if __name__=="__main__":
             idxTrees += 1
         for i in range(idxTrees,nbTrees):
             TREES[k][i] = {0:randomBinaryTree(k)}
-            
+
         for i in range(0,nbTrees):
             unrankedTree = TREES[k][i][0]
             for r in range(1,nbRankings+1):
                 TREES[k][i][r] = rankTreeRandomly(unrankedTree)
-            
+    print 
+
+    print "Counting trees "
     for k in TREES.keys():
+        output = open(out_file+"_"+str(k),"w")
+        output.write("#command line\t"+str(sys.argv)+"\n")
+        output.write("#size_tree\ttree_index\tranking_type\ttree/ranking\tnumber_of_histories\n")
+        output.flush()
+        print "--> "+str(k)
         for i in range(0,nbTrees):
+            print "----> tree "+str(i),
             unrankedTree = TREES[k][i][0]
             s = str(k)+"\t"+str(i)+"\tU\t"+unrankedTree.asNewick()+"\t"
             for n in range(1,nMax+1):
+                #print " "+str(n),
                 S,H,D,T = fillMatrices(unrankedTree,n,False)
                 nbHistories = int(H[unrankedTree.getID()][n])
                 s += str(nbHistories)+" "
             output.write(s+"\n")
+            output.flush()
+            print
             for r in range(1,nbRankings+1):
+                print "----> ranking "+str(r),
                 [ranking,rankedTree] = TREES[k][i][r]
                 s = str(k)+"\t"+str(i)+"\tR\t"+ranking2String(ranking)+"\t"
                 for n in range(1,nMax+1):
+                    #print " "+str(n),
                     S,H,D,T = fillMatrices(rankedTree,n,False)
                     nbHistories = int(H[rankedTree.getID()][n])
                     s += str(nbHistories)+" "
+                print
                 output.write(s+"\n")
+                output.flush()
+        output.close()
