@@ -6,3 +6,6 @@ Experiment exp1a (11/12/2018)
 # The other trees are random binary trees
 # For each configuration we generate histories in the size range (1,nMax=argv[4])
 # We specify the random seed=argv[5] and the output file=argv[6]
+
+Experiment exp1b (11/12/2018)
+# Same but species tree range from 33 to 64 and size of histories goes to 128
