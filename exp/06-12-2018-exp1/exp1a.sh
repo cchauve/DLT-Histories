@@ -6,5 +6,5 @@
 #SBATCH --error  /home/chauvec/wg-anoph/COUNTING_TREES/DLT-Histories/exp/06-12-2018-exp1/traces/exp1a.error
 
 cd src
-python2.7  main_exp1.py 3 32 100 50 20 ../results/exp1a
+python2.7  main_exp1a.py 3 32 100 50 20 ../results/exp1a
 cd ../
