@@ -4,6 +4,5 @@ Experiment exp1a (11/12/2018)
 # The first tree is always the caterpillar
 # If k is a power of 2 the second tree is the complete binary tree
 # The other trees are random binary trees
-# For each tree, we consider it as unranked and then generate nbRankings=argv[4] random rankings
-# For each configuration we generate histories in the size range (1,nMax=argv[5])
-# We specify the random seed=argv[6] and the output file=argv[7]
+# For each configuration we generate histories in the size range (1,nMax=argv[4])
+# We specify the random seed=argv[5] and the output file=argv[6]
