@@ -63,31 +63,39 @@ if __name__=="__main__":
     for k in TREES.keys():
         output = open(out_file+"_"+str(k),"w")
         output.write("#command line\t"+str(sys.argv)+"\n")
-        output.write("#size_tree\ttree_index\tranking_type\ttree/ranking\tnumber_of_histories\n")
+        output.write("#size_tree\ttree_index\tranking_type\tDL/DLT\ttree/ranking\tnumber_of_histories\n")
         output.flush()
         print "--> "+str(k)
         for i in range(0,nbTrees):
             print "----> tree "+str(i),
             unrankedTree = TREES[k][i][0]
-            s = str(k)+"\t"+str(i)+"\tU\t"+unrankedTree.asNewick()+"\t"
+            s1 = str(k)+"\t"+str(i)+"\tU\tDL\t"+unrankedTree.asNewick()+"\t"
+            s2 = str(k)+"\t"+str(i)+"\tU\tDLT\t"+unrankedTree.asNewick()+"\t"
             for n in range(1,nMax+1):
-                #print " "+str(n),
-                S,H,D,T = fillMatrices(unrankedTree,n,False)
-                nbHistories = int(H[unrankedTree.getID()][n])
-                s += str(nbHistories)+" "
-            output.write(s+"\n")
+                S1,H1,D1,T1 = fillMatrices(unrankedTree,n,False)
+                nbHistories1 = int(H1[unrankedTree.getID()][n])
+                s1 += str(nbHistories1)+" "
+                S2,H2,D2,T2 = fillMatrices(unrankedTree,n,True)
+                nbHistories2 = int(H2[unrankedTree.getID()][n])
+                s2 += str(nbHistories2)+" "
+            output.write(s1+"\n")
+            output.write(s2+"\n")
             output.flush()
             print
             for r in range(1,nbRankings+1):
                 print "----> ranking "+str(r),
                 [ranking,rankedTree] = TREES[k][i][r]
-                s = str(k)+"\t"+str(i)+"\tR\t"+ranking2String(ranking)+"\t"
+                s1 = str(k)+"\t"+str(i)+"\tR\tDL\t"+ranking2String(ranking)+"\t"
+                s2 = str(k)+"\t"+str(i)+"\tR\tDLT\t"+ranking2String(ranking)+"\t"
                 for n in range(1,nMax+1):
-                    #print " "+str(n),
-                    S,H,D,T = fillMatrices(rankedTree,n,False)
-                    nbHistories = int(H[rankedTree.getID()][n])
-                    s += str(nbHistories)+" "
+                    S1,H1,D1,T1 = fillMatrices(rankedTree,n,False)
+                    nbHistories1 = int(H1[rankedTree.getID()][n])
+                    s1 += str(nbHistories1)+" "
+                    S2,H2,D2,T2 = fillMatrices(rankedTree,n,True)
+                    nbHistories2 = int(H2[rankedTree.getID()][n])
+                    s2 += str(nbHistories2)+" "
                 print
-                output.write(s+"\n")
+                output.write(s1+"\n")
+                output.write(s2+"\n")
                 output.flush()
         output.close()
