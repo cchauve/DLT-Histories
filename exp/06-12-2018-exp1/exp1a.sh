@@ -7,4 +7,6 @@
 
 cd src
 python2.7  main_exp1a.py 3 32 100 50 20 ../results/exp1a
+cd ../results
+gzip exp1a_*
 cd ../
