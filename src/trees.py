@@ -209,7 +209,7 @@ def buildCompleteTree(h):
     else:
         return Node([buildCompleteTree(h-1),buildCompleteTree(h-1)])
 
-# Build a random binary tree with k leaves
+# Build a random ordered binary tree with k leaves
 
 def randomBinaryTree(k):
     nodes = [Node()]
@@ -223,6 +223,31 @@ def randomBinaryTree(k):
     # Labeling nodes in postorder
     # labelTree(nroot)
     return nroot
+
+# Build a random *unordered* binary tree with k leaves
+
+def precomputeBinaryTrees(n):
+    A = [0 for i in range(0,n+1)]
+    A[1] = 1
+    for i in range(2,n+1):
+        for m in range(1,n):
+            A[i] += A[m]*(n-1-m)*A[n-1-m]
+        A[i] /= (n-1)
+    return A
+
+def randomBinaryTree(n,A):
+    children = []
+    if n>1:
+        r = random.random()*A[n]*(n-1)
+        m = 1
+        for m in range(1,n):
+            r -= A[m]*(n-m-1)*A[n-1-m]
+            if r<0:
+                res = [randomBinaryTree(m,A),randomBinaryTree(n-1-m,A)]
+                break
+    return Node(children)
+
+
 
 # def newick2Tree(s):
 #     # Assumption: s is the newick string of a rooted binary tree
@@ -269,3 +294,18 @@ def randomBinaryTree(k):
 #             s2 = s[i:j]
 #         # We build the tree
 #         return Node([newick2Tree(s1),newick2Tree(s2)])
+
+if __name__ == "__main__":
+    k = 4
+    n = 2*k - 1
+    A = precomputeBinaryTrees(n)
+    print A
+    for i in range(10):
+        t = randomBinaryTree(n,A)
+        printTree(t)
+        labelTree(t)
+        s = t.asNewick()
+        print s
+
+
+    
