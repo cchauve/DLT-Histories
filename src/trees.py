@@ -33,13 +33,6 @@ class Node:
         else:
             return self
 
-    def extendLeft(self):
-        self.children = [Node(self.children),Node()]
-        return self.children
-    def extendRight(self):
-        self.children = [Node(),Node(self.children)]
-        return self.children
-
     def isRoot(self):
         return(self.parent==None)
     def isBinary(self):
@@ -88,13 +81,7 @@ class Node:
             return Node(nchildren, self.id, self.time)
         else:
             return None
-    def copy(self):
-        copyChildren = []
-        for child in self.getChildren():
-            copyChildren.append(child.copy())
-        newTree = Node(copyChildren,self.getID(),self.getTime())
-        return newTree
-    
+        
     def copy(self):
         copyChildren = []
         for child in self.getChildren():
@@ -134,6 +121,22 @@ class Node:
             newick += ":"+str(self.getTime())
         return newick
         
+    def extendLeft(self):
+        extensionR = Node()
+        extensionL = Node(self.children)
+        extensionR.setParent(self)
+        extensionL.setParent(self)
+        self.children = [extensionL,extensionR]
+        return self.children
+    def extendRight(self):
+        extensionL = Node()
+        extensionR = Node(self.children)
+        extensionR.setParent(self)
+        extensionL.setParent(self)
+        self.children = [extensionL,extensionR]
+        return self.children
+
+
 def labelTree(t,currentID=0):
     for c in t.getChildren():
         currentID = labelTree(c,currentID)
@@ -200,8 +203,9 @@ def buildCompleteTree(h):
     else:
         return Node([buildCompleteTree(h-1),buildCompleteTree(h-1)])
 
-# Build a random binary tree with k leaves
-def randomBinaryTree(k):
+# Build a random ordered binary tree with k leaves; Remy's algorithm
+
+def randomOrderedBinaryTree(k):
     nodes = [Node()]
     while(len(nodes))<2*k-1:
         v = random.choice(nodes)
@@ -211,51 +215,57 @@ def randomBinaryTree(k):
             nodes += v.extendRight()
     nroot = nodes[0].getRoot()
     # Labeling nodes in postorder
-    labelTree(nroot)
+    # labelTree(nroot)
     return nroot
 
-# def newick2Tree(s):
-#     # Assumption: s is the newick string of a rooted binary tree
-#     if s[0] != "(": # Case 1: tree reduced to a leaf
-#         s1 = s.split(':')[0]
-#         return Node([],s1,-1)
-#     else: # Case 2, tree with a root
-#         # Assumption: we are on the opening (
-#         i = 1 # Next character
-#         # Looking for the left subtree
-#         j = i;
-#         if s[j] == "(":
-#             # We look for the closing parenthesis
-#             c = 1
-#             while c != 0:
-#                 j += 1
-#                 if s[j] == "(":
-#                     c += 1
-#                 elif s[j] == ")":
-#                     c -= 1
-#             s1 = s[i:j+1]
-#             while s[j] != ",":
-#                 j += 1
-#         else:
-#             while s[j] != ",":
-#                 j += 1
-#             s1 = s[i:j]
-#         # Looking for the right subtree
-#         i = j+1
-#         j = i
-#         if s[j] == "(":
-#             # We look for the closing parenthesis
-#             c = 1
-#             while c != 0:
-#                 j += 1
-#                 if s[j] == "(":
-#                     c += 1
-#                 elif s[j] == ")":
-#                     c -= 1
-#             s2 = s[i:j+1]
-#         else:
-#             while s[j] != ")":
-#                 j += 1
-#             s2 = s[i:j]
-#         # We build the tree
-#         return Node([newick2Tree(s1),newick2Tree(s2)])
+# Build a random *unordered* binary tree with k leaves; modified RANRUT algorithm
+
+def precomputeBinaryTrees(n):
+    A = [0 for i in range(0,n+1)]
+    A[1] = 1
+    for i in range(2,n+1):
+        for m in range(1,i):
+            A[i] += A[m]*(i-1-m)*A[i-1-m]
+        if (i-1)%2 == 0:
+            m = (i-1)/2
+            A[i] += m*A[m]
+        A[i] /= (i-1)
+    return A
+
+def randomBinaryTree_aux(n,A):
+    res = []
+    if n>1:
+        r = random.random()*A[n]*(n-1)
+        m = 1
+        for m in range(1,n):
+            r -= A[m]*(n-m-1)*A[n-1-m]
+            if r<0:
+                leftTree  = randomBinaryTree_aux(m,A)
+                rightTree = randomBinaryTree_aux(n-1-m,A)
+                res = [leftTree,rightTree]
+                break
+        if r>=0:
+            leftTree  = randomBinaryTree_aux((n-1)/2,A)
+            rightTree = leftTree.copy()
+            res = [leftTree,rightTree]
+    return Node(res)
+
+def randomBinaryTree(k):
+    n=2*k-1
+    A = precomputeBinaryTrees(n)
+    return randomBinaryTree_aux(n,A)
+
+
+import sys
+
+if __name__ == "__main__":
+    k = int(sys.argv[1])
+    l = int(sys.argv[2])
+    for i in range(l):
+        t = randomBinaryTree(k)
+        labelTree(t)
+        s = t.asNewick()
+        print s
+
+
+    
