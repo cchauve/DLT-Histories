@@ -33,13 +33,6 @@ class Node:
         else:
             return self
 
-    def extendLeft(self):
-        self.children = [Node(self.children),Node()]
-        return self.children
-    def extendRight(self):
-        self.children = [Node(),Node(self.children)]
-        return self.children
-
     def isRoot(self):
         return(self.parent==None)
     def isBinary(self):
@@ -134,6 +127,22 @@ class Node:
             newick += ":"+str(self.getTime())
         return newick
         
+    def extendLeft(self):
+        extensionR = Node()
+        extensionL = Node(self.children)
+        extensionR.setParent(self)
+        extensionL.setParent(self)
+        self.children = [extensionL,extensionR]
+        return self.children
+    def extendRight(self):
+        extensionL = Node()
+        extensionR = Node(self.children)
+        extensionR.setParent(self)
+        extensionL.setParent(self)
+        self.children = [extensionL,extensionR]
+        return self.children
+
+
 def labelTree(t,currentID=0):
     for c in t.getChildren():
         currentID = labelTree(c,currentID)
@@ -201,6 +210,7 @@ def buildCompleteTree(h):
         return Node([buildCompleteTree(h-1),buildCompleteTree(h-1)])
 
 # Build a random binary tree with k leaves
+
 def randomBinaryTree(k):
     nodes = [Node()]
     while(len(nodes))<2*k-1:
@@ -211,7 +221,7 @@ def randomBinaryTree(k):
             nodes += v.extendRight()
     nroot = nodes[0].getRoot()
     # Labeling nodes in postorder
-    labelTree(nroot)
+    # labelTree(nroot)
     return nroot
 
 # def newick2Tree(s):

@@ -43,7 +43,9 @@ if __name__=="__main__":
             TREES[k][idxTrees]={0:completeTree}
             idxTrees += 1
         for i in range(idxTrees,nbTrees):
-            TREES[k][i] = {0:randomBinaryTree(k)}
+            randomTree = randomBinaryTree(k)
+            labelTree(randomTree)
+            TREES[k][i] = {0:randomTree}
 
     print 
 
