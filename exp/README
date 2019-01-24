@@ -1,1 +1,6 @@
 21-11-2018-CountingHistories: counting DLT-histories on the caterpillar tree.
+
+06-12-2018-exp1 and 09-01-2019-exp1-redone/:
+generating counting data from random species trees
+the experiment done on 06/12 used a code that was not sampling species trees uniformly
+it was redone with this bug addressed on 09/01
