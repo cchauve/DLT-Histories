@@ -34,7 +34,7 @@ for l in asymptotics_data:
     if l[0] != "#":
         l1   = l.rstrip().split('\t')
         tree = l1[1]
-        ASYMPT[tree] = float(l1[4])
+        ASYMPT[tree] = float(l1[2])
 
 # Comparison
 RATIOS = {}
@@ -50,6 +50,7 @@ for tree in EXACT.keys():
         
 # Output
 output = open(sys.argv[4],'w')
+output.write('#size\ttree index\tranked/unranked\tDL/DLT\tratio exact/asymptotics\n')
 for tree in RATIOS.keys():
     output.write(size+'\t'+tree+'\t'+'U\t'+MODEL+'\t')
     for n in range(0,len(RATIOS[tree])):

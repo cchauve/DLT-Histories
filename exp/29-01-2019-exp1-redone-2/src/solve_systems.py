@@ -5,7 +5,7 @@
 """size<TAB>tree index<TAB>tree newick<SPACE>subtrees<TAB>degree of system<TAB>system"""
 """output format: one line per instance"""
 """size<TAB>tree index<TAB>growth factor"""
-"""generates also a file <SIZE>_<TREE INDEX>_solver.py' that encodes the precise commands to solve the system for the instance"""
+"""generates also a file <SIZE>_solver.py' that encodes the precise commands to solve the system for all instances"""
 
 __author__  = "Cedric Chauve"
 __date__    = "January 28, 2019"

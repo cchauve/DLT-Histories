@@ -9,4 +9,6 @@ do
     echo ${K}
     python3.6 src/solve_systems.py ./systems/exp1a_${K}_add1_sys src/
     python3.6 src/${K}_solver.py > systems/exp1a_${K}_asy
+    python3.6 src/compare_with_exact_results.py DL ../09-01-2019-exp1-redone/results/exp1a_${K}.gz ./systems/exp1a_${K}_asy ./systems/exp1a_${K}_comparison
+
 done
