@@ -1,1 +1,4 @@
+solve_systems.py: takes as input a file with a list of systems and solve each system.
+
+
 [cchauve@allizom] src > python3.6 compare_with_exact_results.py DL ../../09-01-2019-exp1-redone/results/exp1a_8.gz ../results/exp1a_8_add1_asy test 
