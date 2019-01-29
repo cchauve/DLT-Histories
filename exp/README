@@ -4,3 +4,5 @@
 generating counting data from random species trees
 the experiment done on 06/12 used a code that was not sampling species trees uniformly
 it was redone with this bug addressed on 09/01
+
+29-01-2019-exp1-redone-2: computing exponential growth in the DL model (MW)
