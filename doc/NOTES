@@ -1,0 +1,111 @@
+January 29, 2019.
+
+These are notes toward finalizing a first draft of the paper.
+
+Conventions:
+S = species tree, k = species tree size, n = history size.
+
+1. Results summary:
+
+1. Theoretical results.
+--------------------------
+
+[DONE] Grammars for the DL and DLT models in the case of ranked and
+unranked species tree.
+
+[DONE] Precise asymptotic estimates in the DL model for the
+caterpillar and complete binary tree for small values of k.
+
+[QUESTION] Can we obtain similar results for the DLT model, for both
+the caterpillar and the complete binary tree?
+
+[QUESTION] In the DL model, can we prove a correlation between the
+number of unique subtrees of S and the exponential growth? Can we
+prove that the caterpillar has always the largest exponential growth
+factor and the complete binary tree the smallest?
+
+2. Code.
+-----------
+
+[DONE] Implementation in python of the code to count and sample
+histories of a given size for an arbitrary S.
+
+[TO DO] It seems the code runs into issues if k > 32, to check.
+
+[DONE] Implementation in python of a small piece of code that, given
+the system of algebraic equations that defines the exponential growth
+factor, compute it. It usese the Newton-Krylov solver of SciPy.
+
+[TO DO] This code does not check there is a unique real solution, so
+there might be some checks to do to make sure this is the case.
+
+[QUESTION] The code described above takes as input a system of
+equations generated in Maple and works only for the DL model for
+unranked S. Would-it be possible, given an arbitrary S, to write in
+python the generation of this system, including in the ranked case?
+This would avoid to have two languages needed to run the code.
+
+3. Experiments.
+-----------------
+
+[DONE] Exact counting sequences for DL and DLT histories up to k=32
+and n=50, in the unranked case, for 100 random S per value of k
+(always including the caterpillar and the complete tree (if k is a
+power of 2). The ratio of of the number of DLT histories over DL
+histories can then be computed, which shows that the histories space
+grows exponentially bigger in the DLT model compared to the DL
+model. This is the main point to take from this experiment. The
+results including a figure of the ratio are described in a notebook
+that can be viewed at
+https://nbviewer.jupyter.org/github/cchauve/DLT-Histories/blob/master/exp/09-01-2019-exp1-redone/doc/exp1.ipynb.
+
+[QUESTION] In the DLT model, the species trees giving respectivelly
+the minimum and maximum number of DLT-histories are not always the
+caterpillar and complete tree. Is-there anything to discuss there.
+
+[QUESTION] Would a figure that would be a scatter plot that plots one
+point per species tree a according to both the number of subtrees and
+the exponential gowth factor for the number of DL-histories be of
+interest? It would put on a same plot reslts for species trees of
+different sizes (i.e. aggregate over all values of k) and might give
+us a clue on a possible relationship between them.
+
+[DONE] Asymptotics for the same species trees of the experiment
+described above, we have the exponential growth factor. By taking the
+ratio between the counting value at n=50 and the asymptotics formula,
+we have an approximation of the constant. This is described, including
+two figures, in
+https://nbviewer.jupyter.org/github/cchauve/DLT-Histories/blob/master/exp/29-01-2019-exp1-redone-2/doc/exp1a-DL-asymptotic.ipynb.
+
+[QUESTION] Can we trust our approximation of the constant? Looking at
+the results, it converges but only up to three decimals at most. Is-it
+really interesting to show these constants?
+
+[QUESTION] Is-there any interest in trying to do the same in the DLT
+model?
+
+[QUESTION] We have no experiments using ranked trees. We can certainly
+take the same 100 random species tree of the previous experiments, and
+generate random rankings, then compute for each the number of
+DL-histories and DLT-histories. The question is now which statistics,
+ideally one per tree, to record. A possibility would be to record for
+each S and n the ranking giving the smallest number of histories and
+the ranking giving the largest number of histories and to compute the
+ratio between the two number of histories. This gives a single
+statistics per pair (S,n) that can then be shown for selected values
+of k and n, as in the figure on the ratio DLT histories/DL histories.
+
+[QUESTION] Can we say anything about the distribution of the number of
+duplications, or losses, or HGT for a given tree? This would require
+to write extra code to obtain it, or maybe to run more experiments by
+random generation of histories. I would say we have already quite a
+lot of material and we could keep this for a future work.
+
+4. Writing.
+------------
+
+[TO DO] We need a one or two figures describing histories.
+
+[TO DO] The part on the caterpillar and complete trees are a little
+long. It would be good to keep only the essential, and move the
+technical details in an appendix.
