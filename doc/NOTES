@@ -63,12 +63,11 @@ https://nbviewer.jupyter.org/github/cchauve/DLT-Histories/blob/master/exp/09-01-
 the minimum and maximum number of DLT-histories are not always the
 caterpillar and complete tree. Is-there anything to discuss there.
 
-[QUESTION] Would a figure that would be a scatter plot that plots one
-point per species tree a according to both the number of subtrees and
-the exponential gowth factor for the number of DL-histories be of
-interest? It would put on a same plot reslts for species trees of
-different sizes (i.e. aggregate over all values of k) and might give
-us a clue on a possible relationship between them.
+[DONE] I generated a scatter plot that plots one point per species
+tree (aggregating over all values of k) according to both the number
+of subtrees and the exponential gowth factor for the number of
+DL-histories. We can observe a pretty good correlation, almost linear,
+although with some deviation.
 
 [DONE] Asymptotics for the same species trees of the experiment
 described above, we have the exponential growth factor. By taking the
