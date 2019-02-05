@@ -9,6 +9,7 @@ class Node:
         self.id = id
         self.parent = None
         self.time = time
+
     def getID(self):
         return self.id
     def setID(self,id):
@@ -17,11 +18,19 @@ class Node:
         return self.time
     def setTime(self,time):
         self.time =  time
+        
+    def getHeight(self):
+        h = 0
+        for c in self.children:
+            hc = 1+c.getHeight()
+            if hc > h:
+                h = hc
+        return h
     def getLength(self):
         n = 1
         for c in self.children:
             n += c.getLength()
-        return n
+        return n    
 
     def setParent(self,u):
         self.parent = u
@@ -189,6 +198,13 @@ def rankTreeRandomly(t):
     labelTree(newTree)
     return (ranks,newTree)
 
+def printRanking(ranking):
+    rankingStr = ""
+    for r in ranking.keys():
+        rankingStr += "("+str(r)+","+str(ranking[r])+"),"
+    rankingStr +=","
+    return(rankingStr.replace(",,",""))
+
 # Build a caterpillar with k leaves
 def buildCaterpillar(k):
     if k == 1:
@@ -255,17 +271,123 @@ def randomBinaryTree(k):
     A = precomputeBinaryTrees(n)
     return randomBinaryTree_aux(n,A)
 
+# Queue of all nodes of the tree in Breadth-First Search order
+def BFSQueue(t):
+    allNodes   = t.allNodes()
+    nodesQueueAux = []
+    nodesQueueAux.append(t.getRoot())
+    nodesQueue = []
+    while len(nodesQueueAux)>0:
+        v = nodesQueueAux[0]
+        for c in v.getChildren():
+            nodesQueueAux.append(c)
+        nodesQueueAux.remove(v)
+        nodesQueue.append(v)
+    return list(reversed(nodesQueue))
+                          
+# Compute a list of unique triples (vLabel,c1Label,c2Label) defined recursively as follows:
+# leaves are labeled 0
+# an internal node label is a integer uniquely defined by the unordered pair of the labels of its two children
+# so if two internal nodes have pairs of children with the same labels, they both receive the same label
+# returns the triples (node,label child1, label child2) with the children labels in lexicographic order
+# with each triple, indicating a subtree, appears once.
+def computeUniqueSubtrees(t):
+    allNodes      = t.allNodes()
+    indexSubtrees = {v: -1 for v in allNodes} # index for the subtree rooted at each node
+    labelSubtrees           = {}  # indexed by pairs (leftLabel,rightLabel) and pointing to the subtree rootLabel
+    currentLabel            = 0
+    labelSubtrees[(-1,-1) ] = currentLabel # leaves
+    # Height of leaves
+    for v in allNodes:
+        if v.isLeaf():
+            indexSubtrees[v] = currentLabel
+    # Computing the bottom-up traversal queue of the nodes
+    nodesQueue  = BFSQueue(t)
+    # Bottom-up traversal to compute the index of each node
+    for v in nodesQueue:
+        if not v.isLeaf():
+            leftLabel  = indexSubtrees[v.getLeft()]
+            rightLabel = indexSubtrees[v.getRight()]
+            if (leftLabel,rightLabel) in labelSubtrees.keys():
+                indexSubtrees[v] = labelSubtrees[(leftLabel,rightLabel)]
+            else:
+                currentLabel += 1
+                indexSubtrees[v] = currentLabel
+                labelSubtrees[(leftLabel,rightLabel)] = currentLabel
+                labelSubtrees[(rightLabel,leftLabel)] = currentLabel
+    # Extracting the unique triples (labelNode,labelChild1,labelChild2)
+    seenLabels  = []
+    triplesList = []
+    for v in allNodes:
+        vLabel = indexSubtrees[v]
+        if not (v.isLeaf() or vLabel in seenLabels):
+            leftLabel  = indexSubtrees[v.getLeft()]
+            rightLabel = indexSubtrees[v.getRight()]
+            if leftLabel>rightLabel:
+                triplesList.append((vLabel,rightLabel,leftLabel))
+            else:
+                triplesList.append((vLabel,leftLabel,rightLabel))
+            seenLabels.append(vLabel)
+
+    return triplesList
+
+def newick2Tree(s):
+    # Assumption: s is the newick string of a rooted binary tree
+    if s[0] != "(": # Case 1: tree reduced to a leaf
+        s1 = s.split(':')[0]
+        return Node([],s1,-1)
+    else: # Case 2, tree with a root
+        # Assumption: we are on the opening (
+        i = 1 # Next character
+        # Looking for the left subtree
+        j = i;
+        if s[j] == "(":
+            # We look for the closing parenthesis
+            c = 1
+            while c != 0:
+                j += 1
+                if s[j] == "(":
+                    c += 1
+                elif s[j] == ")":
+                    c -= 1
+            s1 = s[i:j+1]
+            while s[j] != ",":
+                j += 1
+        else:
+            while s[j] != ",":
+                j += 1
+            s1 = s[i:j]
+        # Looking for the right subtree
+        i = j+1
+        j = i
+        if s[j] == "(":
+            # We look for the closing parenthesis
+            c = 1
+            while c != 0:
+                j += 1
+                if s[j] == "(":
+                    c += 1
+                elif s[j] == ")":
+                    c -= 1
+            s2 = s[i:j+1]
+        else:
+            while s[j] != ")":
+                j += 1
+            s2 = s[i:j]
+        # We build the tree
+        return Node([newick2Tree(s1),newick2Tree(s2)])
+
 
 import sys
 
 if __name__ == "__main__":
     k = int(sys.argv[1])
-    l = int(sys.argv[2])
-    for i in range(l):
-        t = randomBinaryTree(k)
-        labelTree(t)
-        s = t.asNewick()
-        print s
-
-
-    
+    t = randomBinaryTree(k)
+    labelTree(t)
+    s = t.asNewick()
+    print s
+    subtreeLabels = computeUniqueSubtrees(t)
+    print(subtreeLabels)
+    t1 = newick2Tree(s)
+    subtreeLabels1 = computeUniqueSubtrees(t1)
+    print(subtreeLabels1)
