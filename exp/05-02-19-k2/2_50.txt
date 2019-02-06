@@ -1,0 +1,7 @@
+(0,1)2
+{2: 0}
+(0,1)2
+U,DL:	n=50	5.96825392124e+45	growth constant=9.25733640507
+U,DLT:	n=50	8.87759961004e+48	growth constant=10.7135897271
+R,DL:	n=50	5.96825392124e+45	growth constant=9.25733640507
+R,DLT:	n=50	8.87759961004e+48	growth constant=10.7135897271
