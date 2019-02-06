@@ -6,3 +6,9 @@ the experiment done on 06/12 used a code that was not sampling species trees uni
 it was redone with this bug addressed on 09/01
 
 29-01-2019-exp1-redone-2: computing exponential growth in the DL model (MW)
+
+01-02-2019-exp1-ranking: generate 10 rankings for each species tree
+and run experiments in the U-DL, U-DLT, R-DL, R-DLT models.
+
+05-02-19-k2: generates results for the species tree with two leaves
+(k=2) to estimate the growth constant.
