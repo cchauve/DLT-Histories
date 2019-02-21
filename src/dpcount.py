@@ -65,9 +65,10 @@ def TranLbl(u,v):
 # X < 1: parsimonious histories are more likely to be drawn
 # X > 1: non-parsimonious histories are more likely to be drawn
 # The same value of X should be used in filleMatrices and randGen
-def fillMatrices(tree,N,ALLOW_TRANSFERS,X=1.0):
-    #global ALLOW_TRANSFERS
+def fillMatrices(tree,N,MODEL={'D':True,'L':True,'T':False},X=1.0):
+
     nodes = tree.allNodes()
+
     S = [[0 for n in range(N+1)] for u in nodes]
     H = [[0 for n in range(N+1)] for u in nodes]
     D = [[0 for n in range(N+1)] for u in nodes]
@@ -76,9 +77,10 @@ def fillMatrices(tree,N,ALLOW_TRANSFERS,X=1.0):
     for n in range(1,N+1):
         for u in nodes:
             i = u.getID()
-            for m in range(1,n):
+            if MODEL['D']:
+                for m in range(1,n):
                     D[i][n] += H[i][n-m]*H[i][m]*Dup(u)*X
-            if ALLOW_TRANSFERS:
+            if MODEL['T']:
                 if u.getTime() >= 0:
                     receivers = u.getContemporary()
                 else:
@@ -96,11 +98,12 @@ def fillMatrices(tree,N,ALLOW_TRANSFERS,X=1.0):
                 if u.isBinary():
                     l,r = u.getLeft(),u.getRight()
                     lid,rid= l.getID(),r.getID()
-                    S[i][n] = X*(Loss(l)*H[rid][n] + Loss(r)*H[lid][n])
+                    if MODEL['L']:
+                        S[i][n] = X*(Loss(l)*H[rid][n] + Loss(r)*H[lid][n])
                     for m in range(1,n):
                         S[i][n] += H[lid][n-m]*H[rid][m]
                 if u.isUnary():
-                    c = u.getChild()
+                    c   = u.getChild()
                     cid = c.getID()
                     S[i][n] = H[cid][n]
                     
@@ -108,7 +111,7 @@ def fillMatrices(tree,N,ALLOW_TRANSFERS,X=1.0):
 
     return S,H,D,T
 
-def randGen(u,state="H",n=0,S=[],H=[],D=[],T=[],ALLOW_TRANSFERS=False,X=1.0):
+def randGen(u,state="H",n=0,S=[],H=[],D=[],T=[],MODEL={'D':True,'L':True,'T':False},X=1.0):
     i = u.getID()
 
     if state == "H":
@@ -119,30 +122,30 @@ def randGen(u,state="H",n=0,S=[],H=[],D=[],T=[],ALLOW_TRANSFERS=False,X=1.0):
                 rand  = random.random()*H[i][n]
                 rand -= D[i][n]
                 if rand<0:
-                    return randGen(u,'D',n,S,H,D,T,ALLOW_TRANSFERS,X)
+                    return randGen(u,'D',n,S,H,D,T,MODEL,X)
                 rand -= T[i][n]
                 if rand<0:
-                    return randGen(u,'T',n,S,H,D,T,ALLOW_TRANSFERS,X)
+                    return randGen(u,'T',n,S,H,D,T,MODEL,X)
         else:
             rand = random.random()*H[i][n]
             rand -= D[i][n]
             if rand<0:
-                return randGen(u,'D',n,S,H,D,T,ALLOW_TRANSFERS,X)
+                return randGen(u,'D',n,S,H,D,T,MODEL,X)
             rand -= S[i][n]
             if rand<0:
-                return randGen(u,'S',n,S,H,D,T,ALLOW_TRANSFERS,X)
+                return randGen(u,'S',n,S,H,D,T,MODEL,X)
             rand -= T[i][n]
             if rand<0:
-                return randGen(u,'T',n,S,H,D,T,ALLOW_TRANSFERS,X)
+                return randGen(u,'T',n,S,H,D,T,MODEL,X)
 
-    if state == "D":
+    if state == "D" and MODEL['D']:
         rand = random.random()*D[i][n]
         for m in range(1,n):
             rand -= H[i][n-m]*H[i][m]*Dup(u)*X
             if rand<0:
-                return [DupLbl(u)]+randGen(u,'H',n-m,S,H,D,T,ALLOW_TRANSFERS,X)+randGen(u,'H',m,S,H,D,T,ALLOW_TRANSFERS,X)
+                return [DupLbl(u)]+randGen(u,'H',n-m,S,H,D,T,MODEL,X)+randGen(u,'H',m,S,H,D,T,MODEL,X)
             
-    if state == "T" and ALLOW_TRANSFERS:
+    if state == "T" and MODEL['T']:
         rand = random.random()*T[i][n]
         if u.getTime() >= 0:
             receivers = u.getContemporary()
@@ -153,30 +156,31 @@ def randGen(u,state="H",n=0,S=[],H=[],D=[],T=[],ALLOW_TRANSFERS=False,X=1.0):
             for m in range(1,n):
                 rand -= H[i][n-m]*H[j][m]*Tran(u,v)*X
                 if rand<0:
-                    return [TranLbl(u,v)]+randGen(u,'H',n-m,S,H,D,T,ALLOW_TRANSFERS,X)+randGen(v,'H',m,S,H,D,T,ALLOW_TRANSFERS,X)
+                    return [TranLbl(u,v)]+randGen(u,'H',n-m,S,H,D,T,MODEL,X)+randGen(v,'H',m,S,H,D,T,MODEL,X)
                 
     if state == "S" and (not u.isLeaf()):
         if u.isBinary():
             l,r = u.getLeft(),u.getRight()
             lid,rid= l.getID(),r.getID()
             rand = random.random()*S[i][n]
-            rand -= Loss(l)*H[rid][n]*X
-            if rand<0:
-                return [LossLbl(l)] + randGen(r,'H',n,S,H,D,T,ALLOW_TRANSFERS,X)
-            rand -= Loss(r)*H[lid][n]*X
-            if rand<0:
-                return randGen(l,'H',n,S,H,D,T,ALLOW_TRANSFERS,X) + [LossLbl(r)]
+            if MODEL['L']:
+                rand -= Loss(l)*H[rid][n]*X
+                if rand<0:
+                    return [LossLbl(l)] + randGen(r,'H',n,S,H,D,T,MODEL,X)
+                rand -= Loss(r)*H[lid][n]*X
+                if rand<0:
+                    return randGen(l,'H',n,S,H,D,T,MODEL,X) + [LossLbl(r)]
             for m in range(1,n):
                 rand -= H[lid][n-m]*H[rid][m]
                 if rand<0:
-                    return randGen(l,'H',n-m,S,H,D,T,ALLOW_TRANSFERS,X) + randGen(r,'H',m,S,H,D,T,ALLOW_TRANSFERS,X)
+                    return randGen(l,'H',n-m,S,H,D,T,MODEL,X) + randGen(r,'H',m,S,H,D,T,MODEL,X)
         if u.isUnary():
             c = u.getChild()
             cid = c.getID()
             rand = random.random()*S[i][n]
             rand -= H[cid][n]
             if rand<0:
-                return randGen(c,'H',n,S,H,D,T,ALLOW_TRANSFERS,X)
+                return randGen(c,'H',n,S,H,D,T,MODEL,X)
 
     return None
 
@@ -226,26 +230,26 @@ def updateCell1(cellList,costs,multiplicities):
 # The aim is to find the pairs leading to a minimum score and the total
 # number of histories they define
 def updateCell2(cells1,cells2,n,cost,multiplicity):
-    minScore = UNFILLED
+    minScore     = UNFILLED
     for m in range(1,n):
         score1 = cells1[n-m][SC]
         score2 = cells2[m][SC]
         if score1!=UNFILLED and score2!=UNFILLED:
             currentScore = score1+score2+cost
-        if minScore == UNFILLED or minScore>currentScore:
-            minScore = currentScore
+            if minScore == UNFILLED or minScore>currentScore:
+                minScore = currentScore
     nbHistories = 0
     for m in range(1,n):
         score1 = cells1[n-m][SC]
         score2 = cells2[m][SC]
         if score1!=UNFILLED and score2!=UNFILLED:
             currentScore = score1+score2+cost
-        if currentScore == minScore:
-            nbHistories += cells1[n-m][NB]*cells2[m][NB]*multiplicity
+            if currentScore == minScore:
+                nbHistories += cells1[n-m][NB]*cells2[m][NB]*multiplicity
     return({NB: nbHistories, SC: minScore})
 
 # Fill matrices considering only parsimonious histories
-def fillMatricesPars(tree,N,ALLOW_TRANSFERS):
+def fillMatricesPars(tree,N,MODEL={'D':True,'L':True,'T':False}):
     nodes = tree.allNodes()
     S = [[{NB:0,SC:UNFILLED} for n in range(N+1)] for u in nodes]
     H = [[{NB:0,SC:UNFILLED} for n in range(N+1)] for u in nodes]
@@ -255,9 +259,10 @@ def fillMatricesPars(tree,N,ALLOW_TRANSFERS):
     for n in range(1,N+1):
         for u in nodes:
             i = u.getID()
-            D[i][n] = updateCell2(H[i],H[i],n,costDup(u),Dup(u))
+            if MODEL['D']:
+                D[i][n] = updateCell2(H[i],H[i],n,costDup(u),Dup(u))
 
-            if ALLOW_TRANSFERS:
+            if MODEL['T']:
                 if u.getTime() >= 0:
                     receivers = u.getContemporary()
                 else:
@@ -278,7 +283,8 @@ def fillMatricesPars(tree,N,ALLOW_TRANSFERS):
                 if u.isBinary():
                     l,r = u.getLeft(),u.getRight()
                     lid,rid= l.getID(),r.getID()
-                    S[i][n] = updateCell1([H[rid][n],H[lid][n]],[costLoss(r),costLoss(l)],[Loss(r),Loss(l)])                    
+                    if MODEL['L']:
+                        S[i][n] = updateCell1([H[rid][n],H[lid][n]],[costLoss(r),costLoss(l)],[Loss(r),Loss(l)])                    
                     for m in range(1,n):
                         if (H[lid][n-m][SC]+H[rid][m][SC])<S[i][n][SC]:
                             S[i][n] = {NB: H[lid][n-m][NB]*H[rid][m][NB], SC: H[lid][n-m][SC]+H[rid][m][SC]}
