@@ -1,0 +1,4 @@
+# Counting sequences for the caterpillar trees of size 2 to 32 with n from 1 to 32
+python2.7 src/main1.py 2 32 32 results/caterpillar_2-32.txt
+# Estmated growth factors for the caterpillar and complete trees of size 2,4,8,16,32,64,128
+python2.7 src/main2.py 1 7 80 results/caterpillar_complete_2-128-80.txt
