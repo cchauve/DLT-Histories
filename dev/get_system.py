@@ -1,0 +1,109 @@
+__author__  = "Cedric Chauve, Michael Wallner"
+__date__    = "April 10, 2019"
+
+import sys
+import numpy as np
+import sympy as sp
+import os
+#from sympy import *
+from sympy.matrices import Matrix, zeros
+from trees import *
+
+# ---------------------------------------------------------------------------
+# Given a tree t, creates a system of equation whose solution gives
+# the exponential growth factor of the counting sequence for the number
+# of histories conditional to t
+#
+# naive algorithm: create 1 equation per node
+# i.e. does not optimize for identical subgrammars due to identical subtrees
+#
+# Input: 
+# t .............. root of species tree: Node class
+# MODEL .......... evolutionary model
+# Assumption: if not MODEL['L'] then not MODEL['SL']
+# Output: 
+# mySys .......... String with system of equations
+# M .............. Symbolic matrix of the system
+def getSystem(t,MODEL={'D':True,'L':True,'T':False,'SL':False}):
+    if (not MODEL['L']) and MODEL['SL']:
+        print('ERROR: SL allowed while L not allowed')
+        
+    # Tree t nodes
+    allNodes = t.allNodes()
+    K        = len(allNodes)
+    
+    # Create symbolic variables needed for the determinant
+    symVarStr  = ','.join(['b'+str(i) for i in range(K)])   
+    symVarList = sp.symbols(symVarStr)
+    
+    M     = zeros(K) 
+    mySys = []    
+    
+    for u in allNodes:
+        i  = u.getID()
+	bi = 'b'+str(i)
+        eq = ''
+        
+        # Duplication
+        if MODEL['D']:
+	    eq += '-'+bi+'+'+bi+'^2'
+            M[i,i] = 2*symVarList[i]-1
+
+        if u.isLeaf():
+            eq += '+z'
+        elif u.isUnary():
+            c  = u.getChild().getID()
+            bc = 'b'+str(c)
+            eq += bc # Unary speciation
+            M[i,c] = symVarList[c]+1
+        else:
+            l,r = u.getLeft().getID(),u.getRight().getID()
+            bl  = 'b'+str(l)
+            br  = 'b'+str(r)
+            if not MODEL['SL']:
+                eq += '+'+bl+'*'+br#+'+'+bl+'+'+br # Speciation
+            if MODEL['L']:
+                eq += '+'+bl+'+'+br # SpeciationLoss
+            M[i,l] = symVarList[r]+1
+            M[i,r] = symVarList[l]+1
+
+        # HGT
+        if MODEL['T']:
+            if u.getTime() >= 0:
+                receivers = u.getContemporary()
+            else:
+                receivers = u.getIncomparable()
+            for v in receivers:
+               j  = v.getID()
+               bj = 'b'+str(j)
+               eq = eq+'+'+bi+'*'+bj
+               M[i,i] += symVarList[j]
+               M[i,j]  = symVarList[i]
+
+        mySys.append(eq)
+
+    return((mySys,M))
+
+if __name__ == "__main__":
+    # k = int(sys.argv[1])
+    # t = randomBinaryTree(k)
+    t = newick2Tree(sys.argv[1])
+    useMaple = sys.argv[2]
+    labelTree(t)
+    s = t.asNewick()
+    print(s)    
+
+    (sysEq,matrixEq) = getSystem(t)
+    print(sysEq)
+    
+    if useMaple == 'maple':
+        file = open("matrix_INPUT.dat","w") 
+        file.write("matrix_INPUT:="+matrixEq.__str__()+";") 
+        file.close()
+        os.system("cmaple.exe -q mapleDeterminant.mpl")    
+        file = open("detM.dat", "r") 
+        detM = file.read() 
+        file.close()
+    else:
+        detM = matrixEq.det()
+    print(str(detM).replace(',','\n'))
