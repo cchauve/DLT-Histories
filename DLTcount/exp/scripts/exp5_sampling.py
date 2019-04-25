@@ -1,26 +1,38 @@
 # Sampling histories
 
 from trees   import *
-from dpcount import *
-from utils   import *
+from DLTcount import *
 
 import math
 import random
 
 if __name__=="__main__":
-    k      = int(sys.argv[1])
-    n      = int(sys.argv[2])
-    mk     = int(sys.argv[3]) # Number of random trees
-    mn     = int(sys.argv[4]) # Number of samples
-    hgt    = (sys.argv[5] == 'True')
-    ranked = (sys.argv[6] == 'True')
-    output = open(sys.argv[7],'w')
-    s      = 101
-    
-    random.seed(s)
+    k   = 16    # size (#leaves) of considered trees
+    n   = 30    # size of histories
+    mk  = 50    # Number of random trees
+    mn  = 10000 # Number of samples
+    model = sys.argv[1]
+    seed   = 101
 
+    if model == 'UDL':
+        MODEL  = {'D':True, 'L': True, 'T':False}
+        ranked = False
+    elif model == 'UDLT'
+        MODEL = {'D':True, 'L': True, 'T':True}
+        ranked = False
+    elif model == 'RDL':
+        MODEL  = {'D':True, 'L': True, 'T':False}
+        ranked = True
+    elif model == 'RDLT'
+        MODEL = {'D':True, 'L': True, 'T':True}
+        ranked = True
+        
+    random.seed(seed)
+
+    output = open('../sampling/samples_'+str(k)+'_'+str(n)+'_'+model,'w')
+    
     for i in range(0,mk):    
-        utree  = randomBinaryTree(k)
+        utree  = randomOrderedBinaryTree(k)
         labelTree(utree)
         output.write('# S_'+str(i)+'\t'+utree.asNewick())
         if ranked:
@@ -54,3 +66,5 @@ if __name__=="__main__":
             output.write('D:'+str(nD)+' ')
             output.write('L:'+str(nL)+' ')
             output.write('T:'+str(nT)+'\n')
+            
+    output.close()
