@@ -17,13 +17,13 @@ if __name__=="__main__":
     if model == 'UDL':
         MODEL  = {'D':True, 'L': True, 'T':False}
         ranked = False
-    elif model == 'UDLT'
+    elif model == 'UDLT':
         MODEL = {'D':True, 'L': True, 'T':True}
         ranked = False
     elif model == 'RDL':
         MODEL  = {'D':True, 'L': True, 'T':False}
         ranked = True
-    elif model == 'RDLT'
+    elif model == 'RDLT':
         MODEL = {'D':True, 'L': True, 'T':True}
         ranked = True
         
