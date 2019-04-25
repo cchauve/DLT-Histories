@@ -50,10 +50,10 @@ if __name__=="__main__":
             if node.isLeaf():
                 allLeaves.append(node.getID())
             
-        S,H,D,T = fillMatrices(stree,n,hgt)
+        S,H,D,T = fillMatrices(stree,n,MODEL)
 
         for j in range(0,mn):
-            history = randGen(stree,'H',n,S,H,D,T,hgt)
+            history = randGen(stree,'H',n,S,H,D,T,MODEL)
             nZ = {}
             for q in allLeaves:
                 nZ[q] = history.count('Z'+str(q))
