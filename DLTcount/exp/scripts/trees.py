@@ -38,7 +38,17 @@ class Node:
         n = 1
         for c in self.children:
             n += c.getLength()
-        return(n)    
+        return(n)
+
+    def getSize(self): # Size = number of leaves
+        if len(self.children)==0:
+            n=1
+        else:
+            n=0
+            for c in self.children:
+                n += c.getSize()
+        return(n)
+            
 
     def setParent(self,u):
         self.parent = u
@@ -58,7 +68,7 @@ class Node:
         return(len(self.children)==1)
     def isLeaf(self):
         return(len(self.children)==0)
-
+        
     def getChildren(self):
         return(self.children)
     def setChildren(self,children):
@@ -182,6 +192,39 @@ def correctedLength(t):
     m = t.getLength()
     return(m-((m+1)/2))
 
+# Check if a tree is balanced
+def checkBalanced(t): 
+    children = t.getChildren()
+    if len(children) == 0:
+        return(True)
+    else:
+        balanced = True
+        minSize = -1
+        maxSize = -1
+        for child in children:               
+            balanced = balanced and checkBalanced(child)
+            sizeChild = child.getSize()
+            if minSize == -1 or minSize > sizeChild:
+                minSize = sizeChild
+            if maxSize < sizeChild:
+                maxSize = sizeChild
+        balanced = balanced and abs(minSize-maxSize)<=1
+        return(balanced)
+
+# Check if a tree is a caterpillar
+def checkCaterpillar(t):
+    children = t.getChildren()
+    n = t.getLength()
+    if len(children) == 0:
+        return(True)
+    elif len(children) != 2:
+        return(False)
+    else:
+        sizeLeft  = t.getLeft().getLength()
+        sizeRight = t.getRight().getLength()
+        return(((sizeLeft==1 and sizeRight==n-2) or (sizeLeft==n-2 and sizeRight==1)) and checkCaterpillar(t.getLeft()) and checkCaterpillar(t.getRight()))
+    
+    
 # Random ranking of a tree: returns the ranking and the unary-binary trees given by the ranking
 def rankTreeRandomly(t):
     newTree = t.copy()
