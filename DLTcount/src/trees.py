@@ -50,6 +50,12 @@ class Node:
         return(n)
             
 
+    def getSize(self): # Size = number of leaves
+        size = 0
+        for c in self.children:
+            size += c.getSize()
+        return(max(1,size))
+        
     def setParent(self,u):
         self.parent = u
     def getParent(self):
@@ -187,7 +193,40 @@ def printTree(t,indent=0):
     for c in t.getChildren():
         printTree(c,indent+1)
 
-# Auxiliary function to rank randomly a tree
+# Check if a tree is balanced
+def checkBalanced(t): 
+    children = t.getChildren()
+    if len(children) == 0:
+        return(True)
+    else:
+        balanced = True
+        minSize = -1
+        maxSize = -1
+        for child in children:               
+            balanced = balanced and checkBalanced(child)
+            sizeChild = child.getSize()
+            if minSize == -1 or minSize > sizeChild:
+                minSize = sizeChild
+            if maxSize < sizeChild:
+                maxSize = sizeChild
+        balanced = balanced and abs(minSize-maxSize)<=1
+        return(balanced)
+
+# Check if a tree is a caterpillar
+def checkCaterpillar(t):
+    children = t.getChildren()
+    n = t.getLength()
+    if len(children) == 0:
+        return(True)
+    elif len(children) != 2:
+        return(False)
+    else:
+        sizeLeft  = t.getLeft().getLength()
+        sizeRight = t.getRight().getLength()
+        return(((sizeLeft==1 and sizeRight==n-2) or (sizeLeft==n-2 and sizeRight==1)) and checkCaterpillar(t.getLeft()) and checkCaterpillar(t.getRight()))
+
+
+    # Auxiliary function to rank randomly a tree
 def correctedLength(t):
     m = t.getLength()
     return(m-((m+1)/2))
@@ -271,6 +310,31 @@ def printRanking(ranking):
     rankingStr +=","
     return(rankingStr.replace(",,",""))
 
+# Read a ranking
+def readRanking(s):
+    ranking={}
+    s1 = s.rstrip().split('),(')
+    for r in s1:
+        r1=r.replace('(','').replace(')','').split(',')
+        ranking[int(r1[0])]=int(r1[1])
+    return(ranking)
+
+# Rank a tree given a ranking
+def rankTree(tree,ranking):
+    newTree = tree.copy()
+    n = newTree.getSize()-1 # Number of internal nodes
+    allNodes = newTree.allNodes()
+    for v in allNodes:
+        if not v.isLeaf():
+            v.setTime(ranking[v.getID()])
+        else:
+            v.setTime(n)
+    # Inserting unary nodes on the branches of the ranked tree
+    newTree = newTree.buildUnaryBinary()
+    # Labeling nodes in postorder
+    labelTree(newTree)
+    return(newTree)
+    
 # Build a caterpillar tree with k leaves
 def buildCaterpillar(k):
     if k == 1:
@@ -285,6 +349,15 @@ def buildCompleteTree(h):
     else:
         return(Node([buildCompleteTree(h-1),buildCompleteTree(h-1)]))
 
+# Build a balanced binary tree with k leaves
+def buildBalancedTree(k):
+    if k == 1:
+        return(Node())
+    else:
+        k1 = int(k/2)
+        k2 = k-k1
+        return(Node([buildBalancedTree(k1),buildBalancedTree(k2)]))
+    
 # Build a random ordered binary tree with k leaves; Remy's algorithm
 def randomOrderedBinaryTree(k):
     nodes = [Node()]

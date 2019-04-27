@@ -193,7 +193,40 @@ def printTree(t,indent=0):
     for c in t.getChildren():
         printTree(c,indent+1)
 
-# Auxiliary function to rank randomly a tree
+# Check if a tree is balanced
+def checkBalanced(t): 
+    children = t.getChildren()
+    if len(children) == 0:
+        return(True)
+    else:
+        balanced = True
+        minSize = -1
+        maxSize = -1
+        for child in children:               
+            balanced = balanced and checkBalanced(child)
+            sizeChild = child.getSize()
+            if minSize == -1 or minSize > sizeChild:
+                minSize = sizeChild
+            if maxSize < sizeChild:
+                maxSize = sizeChild
+        balanced = balanced and abs(minSize-maxSize)<=1
+        return(balanced)
+
+# Check if a tree is a caterpillar
+def checkCaterpillar(t):
+    children = t.getChildren()
+    n = t.getLength()
+    if len(children) == 0:
+        return(True)
+    elif len(children) != 2:
+        return(False)
+    else:
+        sizeLeft  = t.getLeft().getLength()
+        sizeRight = t.getRight().getLength()
+        return(((sizeLeft==1 and sizeRight==n-2) or (sizeLeft==n-2 and sizeRight==1)) and checkCaterpillar(t.getLeft()) and checkCaterpillar(t.getRight()))
+
+
+    # Auxiliary function to rank randomly a tree
 def correctedLength(t):
     m = t.getLength()
     return(m-((m+1)/2))
