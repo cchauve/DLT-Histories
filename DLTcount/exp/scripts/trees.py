@@ -40,6 +40,12 @@ class Node:
             n += c.getLength()
         return(n)    
 
+    def getSize(self): # Size = number of leaves
+        size = 0
+        for c in self.children:
+            size += c.getSize()
+        return(max(1,size))
+        
     def setParent(self,u):
         self.parent = u
     def getParent(self):
@@ -228,6 +234,31 @@ def printRanking(ranking):
     rankingStr +=","
     return(rankingStr.replace(",,",""))
 
+# Read a ranking
+def readRanking(s):
+    ranking={}
+    s1 = s.rstrip().split('),(')
+    for r in s1:
+        r1=r.replace('(','').replace(')','').split(',')
+        ranking[int(r1[0])]=int(r1[1])
+    return(ranking)
+
+# Rank a tree given a ranking
+def rankTree(tree,ranking):
+    newTree = tree.copy()
+    n = newTree.getSize()-1 # Number of internal nodes
+    allNodes = newTree.allNodes()
+    for v in allNodes:
+        if not v.isLeaf():
+            v.setTime(ranking[v.getID()])
+        else:
+            v.setTime(n)
+    # Inserting unary nodes on the branches of the ranked tree
+    newTree = newTree.buildUnaryBinary()
+    # Labeling nodes in postorder
+    labelTree(newTree)
+    return(newTree)
+    
 # Build a caterpillar tree with k leaves
 def buildCaterpillar(k):
     if k == 1:
@@ -242,6 +273,15 @@ def buildCompleteTree(h):
     else:
         return(Node([buildCompleteTree(h-1),buildCompleteTree(h-1)]))
 
+# Build a balanced binary tree with k leaves
+def buildBalancedTree(k):
+    if k == 1:
+        return(Node())
+    else:
+        k1 = int(k/2)
+        k2 = k-k1
+        return(Node([buildBalancedTree(k1),buildBalancedTree(k2)]))
+    
 # Build a random ordered binary tree with k leaves; Remy's algorithm
 def randomOrderedBinaryTree(k):
     nodes = [Node()]
