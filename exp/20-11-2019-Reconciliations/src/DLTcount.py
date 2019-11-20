@@ -36,9 +36,9 @@ def HGTLbl(u,v):
 # X < 1: parsimonious histories are more likely to be sampled
 # X > 1: non-parsimonious histories are more likely to be sampled
 # The same value of X should be used in filleMatrices and randGen
-# E_MODEL specifies the evolutionary model
+# MODEL specifies the evolutionary model
 # O_MODEL specifies the object (history or reconciliation), HIST or REC
-def fillMatrices_aux(tree,N,E_MODEL={'D':True,'L':True,'T':False},O_MODEL=HIST,X=1.0):
+def fillMatrices_aux(tree,N,MODEL={'D':True,'L':True,'T':False},O_MODEL=HIST,X=1.0):
 
     nodes = tree.allNodes()
 
@@ -50,12 +50,12 @@ def fillMatrices_aux(tree,N,E_MODEL={'D':True,'L':True,'T':False},O_MODEL=HIST,X
     for n in range(1,N+1):
         for u in nodes:
             i = u.getID()
-            if E_MODEL['D']:
+            if MODEL['D']:
                 for m in range(1,n):
                     D[i][n] += H[i][n-m]*H[i][m]*Dup(u,O_MODEL)*X
                 if n%2==0:
                     D[i][n] += H[i][int(n/2)]*(1.0-Dup(u,O_MODEL))*X
-            if E_MODEL['T']:
+            if MODEL['T']:
                 if u.getTime() >= 0:
                     receivers = u.getContemporary()
                 else:
@@ -73,7 +73,7 @@ def fillMatrices_aux(tree,N,E_MODEL={'D':True,'L':True,'T':False},O_MODEL=HIST,X
                 if u.isBinary():
                     l,r = u.getLeft(),u.getRight()
                     lid,rid= l.getID(),r.getID()
-                    if E_MODEL['L']:
+                    if MODEL['L']:
                         S[i][n] = X*(Loss(l)*H[rid][n] + Loss(r)*H[lid][n])
                     for m in range(1,n):
                         S[i][n] += H[lid][n-m]*H[rid][m]
@@ -86,11 +86,11 @@ def fillMatrices_aux(tree,N,E_MODEL={'D':True,'L':True,'T':False},O_MODEL=HIST,X
 
     return(S,H,D,T)
 
-def fillMatricesHist(tree,N,E_MODEL,X):
-    return(fillMatrices_aux(tree,N,E_MODEL,HIST,X))
+def fillMatricesHist(tree,N,MODEL,X):
+    return(fillMatrices_aux(tree,N,MODEL,HIST,X))
 
-def fillMatricesRec(tree,N,E_MODEL,X):
-    return(fillMatrices_aux(tree,N,E_MODEL,REC,X))
+def fillMatricesRec(tree,N,MODEL,X):
+    return(fillMatrices_aux(tree,N,MODEL,REC,X))
         
 # ---------------------------------------------------------------------------
 
