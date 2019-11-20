@@ -99,7 +99,7 @@ def fillMatricesRec(tree,N,MODEL={'D':True,'L':True,'T':False},X=1.0):
                 for m in range(1,n):
                     D[i][n] += 0.5*H[i][n-m]*H[i][m]*Dup(u)*X
                     if n%2==0:
-                        D[i][n] += 0.5*H[i][int(n/2)]
+                        D[i][n] += 0.5*H[i][int(n/2)]*Dup(u)*X
             if MODEL['T']:
                 if u.getTime() >= 0:
                     receivers = u.getContemporary()
