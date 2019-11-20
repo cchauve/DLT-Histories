@@ -87,10 +87,10 @@ def fillMatrices_aux(tree,N,E_MODEL={'D':True,'L':True,'T':False},O_MODEL=HIST,X
     return(S,H,D,T)
 
 def fillMatricesHist(tree,N,E_MODEL,X):
-    def fillMatrices_aux(tree,N,E_MODEL,HIST,X)
+    return(fillMatrices_aux(tree,N,E_MODEL,HIST,X))
 
 def fillMatricesRec(tree,N,E_MODEL,X):
-    def fillMatrices_aux(tree,N,E_MODEL,REC,X)
+    return(fillMatrices_aux(tree,N,E_MODEL,REC,X))
         
 # ---------------------------------------------------------------------------
 
