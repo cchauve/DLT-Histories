@@ -46,10 +46,10 @@ if __name__=="__main__":
                 hs1 += rankingStr+"\t"
                 hs2 += rankingStr+"\t"
                 for n in range(1,nMax+1):
-                    hS1,hH1,hD1,hT1 = fillMatricesHist(rankedTree,n,MODEL={'D':True,'L':True,'T':False},1.0)
+                    hS1,hH1,hD1,hT1 = fillMatricesHist(rankedTree,n,MODEL={'D':True,'L':True,'T':False},X=1.0)
                     nbHistories1 = int(hH1[rankedTree.getID()][n],)
                     hs1 += str(nbHistories1)+" "
-                    hS2,hH2,hD2,hT2 = fillMatricesHist(rankedTree,n,MODEL={'D':True,'L':True,'T':True},1.0)
+                    hS2,hH2,hD2,hT2 = fillMatricesHist(rankedTree,n,MODEL={'D':True,'L':True,'T':True},X=1.0)
                     nbHistories2 = int(hH2[rankedTree.getID()][n])
                     hs2 += str(nbHistories2)+" "
                 output.write(hs1+"\n")
@@ -61,10 +61,10 @@ if __name__=="__main__":
                 rs1 += rankingStr+"\t"
                 rs2 += rankingStr+"\t"
                 for n in range(1,nMax+1):
-                    rS1,rH1,rD1,rT1 = fillMatricesRec(rankedTree,n,MODEL={'D':True,'L':True,'T':False},1.0)
+                    rS1,rH1,rD1,rT1 = fillMatricesRec(rankedTree,n,MODEL={'D':True,'L':True,'T':False},X=1.0)
                     nbReconciliations1 = int(rH1[rankedTree.getID()][n],)
                     rs1 += str(nbReconciliations1)+" "
-                    rS2,rH2,rD2,rT2 = fillMatricesRec(rankedTree,n,MODEL={'D':True,'L':True,'T':True},1.0)
+                    rS2,rH2,rD2,rT2 = fillMatricesRec(rankedTree,n,MODEL={'D':True,'L':True,'T':True},X=1.0)
                     nbReconciliations2 = int(rH2[rankedTree.getID()][n])
                     rs2 += str(nbReconciliations2)+" "
                 output.write(rs1+"\n")
