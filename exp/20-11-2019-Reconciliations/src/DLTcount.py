@@ -86,10 +86,10 @@ def fillMatrices_aux(tree,N,MODEL={'D':True,'L':True,'T':False},O_MODEL=HIST,X=1
 
     return(S,H,D,T)
 
-def fillMatricesHist(tree,N,MODEL,X):
+def fillMatricesHist(tree,N,MODEL={'D':True,'L':True,'T':False},X=1.0):
     return(fillMatrices_aux(tree,N,MODEL,HIST,X))
 
-def fillMatricesRec(tree,N,MODEL,X):
+def fillMatricesRec(tree,N,MODEL={'D':True,'L':True,'T':False},X=1.0):
     return(fillMatrices_aux(tree,N,MODEL,REC,X))
         
 # ---------------------------------------------------------------------------
