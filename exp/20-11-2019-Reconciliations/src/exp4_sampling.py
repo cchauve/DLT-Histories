@@ -1,4 +1,4 @@
-# Sampling histories
+# Sampling histories and reconciliations
 
 from trees   import *
 from DLTcount import *
@@ -12,6 +12,7 @@ if __name__=="__main__":
     mk  = 50    # Number of random trees
     mn  = 10000 # Number of samples
     model   = sys.argv[1]
+    objects = sys.argv[2]
     seed    = 101
 
     if model == 'UDL':
@@ -29,8 +30,10 @@ if __name__=="__main__":
         
     random.seed(seed)
 
-    outputHistories       = open('../results/samples_H_'+str(k)+'_'+str(n)+'_'+model,'w')
-    outputReconciliations = open('../results/samples_R_'+str(k)+'_'+str(n)+'_'+model,'w')
+    if objects == 'HIST':
+        output = open('../results/samples_H_'+str(k)+'_'+str(n)+'_'+model,'w')
+    elif objects == 'REC':
+        output = open('../results/samples_R_'+str(k)+'_'+str(n)+'_'+model,'w')
     
     for i in range(0,mk):    
         utree  = randomOrderedBinaryTree(k)
@@ -51,41 +54,28 @@ if __name__=="__main__":
             if node.isLeaf():
                 allLeaves.append(node.getID())
 
-        # Histories
-        Sh,Hh,Dh,Th = fillMatricesHist(stree,n,MODEL)
-
+        if objects == 'HIST':
+            S,H,D,T = fillMatricesHist(stree,n,MODEL)
+        elif objects == 'REC':
+            S,H,D,T = fillMatricesRec(stree,n,MODEL)
+            
         for j in range(0,mn):
-            history = randGenHist(stree,'H',n,Sh,Hh,Dh,Th,MODEL)
+            if objects == 'HIST':
+                hr = randGenHist(stree,'H',n,S,H,D,T,MODEL)
+            elif objects == 'REC':
+                hr = randGenRec(stree,'H',n,S,H,D,T,MODEL)
+                
             nZ = {}
             for q in allLeaves:
-                nZ[q] = history.count('Z'+str(q))
-            strHistory = str(history)
-            nD = strHistory.count('D')
-            nL = strHistory.count('L')
-            nT = strHistory.count('T')
+                nZ[q] = hr.count('Z'+str(q))
+            strHR = str(hr)
+            nD = strHR.count('D')
+            nL = strHR.count('L')
+            nT = strHR.count('T')
             for q in allLeaves:                    
                 output.write('Z'+str(q)+':'+str(nZ[q])+' ')
-            outputHistories.write('D:'+str(nD)+' ')
-            outputHistories.write('L:'+str(nL)+' ')
-            outputHistories.write('T:'+str(nT)+'\n')
+            output.write('D:'+str(nD)+' ')
+            output.write('L:'+str(nL)+' ')
+            output.write('T:'+str(nT)+'\n')
 
-        # Reconciliations
-        Sr,Hr,Dr,Tr = fillMatricesRec(stree,n,MODEL)
-
-        for j in range(0,mn):
-            reconciliation = randGenRec(stree,'H',n,Sr,Hr,Dr,Tr,MODEL)
-            nZ = {}
-            for q in allLeaves:
-                nZ[q] = reconciliation.count('Z'+str(q))
-            strReconciliation = str(reconciliation)
-            nD = strReconciliation.count('D')
-            nL = strReconciliation.count('L')
-            nT = strReconciliation.count('T')
-            for q in allLeaves:                    
-                output.write('Z'+str(q)+':'+str(nZ[q])+' ')
-            outputReconciliations.write('D:'+str(nD)+' ')
-            outputReconciliations.write('L:'+str(nL)+' ')
-            outputReconciliations.write('T:'+str(nT)+'\n')
-
-    outputHistories.close()
-    outputReconciliations.close()
+    output.close()

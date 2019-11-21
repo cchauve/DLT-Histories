@@ -7,8 +7,12 @@
 
 cd /home/chauvec/wg-anoph/COUNTING_TREES_v2/DLT-Histories/exp/20-11-2019-Reconciliations/src
 
-python exp4_sampling.py UDL
-python exp4_sampling.py UDLT
-python exp4_sampling.py RDL
-python exp4_sampling.py RDLT
+python exp4_sampling.py UDL  HIST
+python exp4_sampling.py UDLT HIST
+python exp4_sampling.py RDL  HIST
+python exp4_sampling.py RDLT HIST
 
+python exp4_sampling.py UDL  REC
+python exp4_sampling.py UDLT REC
+python exp4_sampling.py RDL  REC
+python exp4_sampling.py RDLT REC
