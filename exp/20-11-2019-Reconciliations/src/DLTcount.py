@@ -16,6 +16,8 @@ REC='R'
 def Dup(u,HR): # Gene duplication, HR = 'H' for history, 'R' for reconciliation
     COEFF={HIST:1.0,REC:0.5}
     return(COEFF[HR])
+def DupGen(u):
+    return(1.0)
 def HGT(u,v): # Horizontal Gene Transfer
     return(1.0)
 # Functions to print evolutionary events
@@ -91,10 +93,97 @@ def fillMatricesHist(tree,N,MODEL={'D':True,'L':True,'T':False},X=1.0):
 
 def fillMatricesRec(tree,N,MODEL={'D':True,'L':True,'T':False},X=1.0):
     return(fillMatrices_aux(tree,N,MODEL,REC,X))
-        
+
+# ---------------------------------------------------------------------------
+# Sampling histories and reconciliations
+
+def randGen_aux(u,state="H",n=0,S=[],H=[],D=[],T=[],MODEL={'D':True,'L':True,'T':False},O_MODEL=HIST,X=1.0):
+    i = u.getID()
+
+    if state == "H":
+        if u.isLeaf():
+            if n==1:
+                return([ExtLbl(u)])
+            else: # => n>1
+                rand  = random.random()*H[i][n]
+                rand -= D[i][n]
+                if rand<0:
+                    return(randGen_aux(u,'D',n,S,H,D,T,MODEL,O_MODEL,X))
+                rand -= T[i][n]
+                if rand<0:
+                    return(randGen_aux(u,'T',n,S,H,D,T,MODEL,O_MODEL,X))
+        else:
+            rand = random.random()*H[i][n]
+            rand -= D[i][n]
+            if rand<0:
+                return(randGen_aux(u,'D',n,S,H,D,T,MODEL,O_MODEL,X))
+            rand -= S[i][n]
+            if rand<0:
+                return(randGen_aux(u,'S',n,S,H,D,T,MODEL,O_MODEL,X))
+            rand -= T[i][n]
+            if rand<0:
+                return(randGen_aux(u,'T',n,S,H,D,T,MODEL,O_MODEL,X))
+
+    if state == "D" and MODEL['D']:
+        rand = random.random()*D[i][n]
+        if O_MODEL==HIST:
+            bound = n
+        else:
+            bound = int(n/2)+1
+        for m in range(1,bound):
+            rand -= H[i][n-m]*H[i][m]*DupGen(u)*X
+            if rand<0:
+                return([DupLbl(u)]+randGen_aux(u,'H',n-m,S,H,D,T,MODEL,O_MODEL,X)+randGen_aux(u,'H',m,S,H,D,T,MODEL,O_MODEL,X))
+            
+    if state == "T" and MODEL['T']:
+        rand = random.random()*T[i][n]
+        if u.getTime() >= 0:
+            receivers = u.getContemporary()
+        else:
+            receivers = u.getIncomparable()
+        for v in receivers:
+            j = v.getID()
+            for m in range(1,n):
+                rand -= H[i][n-m]*H[j][m]*HGT(u,v)*X
+                if rand<0:
+                    return([HGTLbl(u,v)]+randGen_aux(u,'H',n-m,S,H,D,T,MODEL,O_MODEL,X)+randGen_aux(v,'H',m,S,H,D,T,MODEL,O_MODEL,X))
+                
+    if state == "S" and (not u.isLeaf()):
+        if u.isBinary():
+            l,r = u.getLeft(),u.getRight()
+            lid,rid= l.getID(),r.getID()
+            rand = random.random()*S[i][n]
+            if MODEL['L']:
+                rand -= Loss(l)*H[rid][n]*X
+                if rand<0:
+                    return([LossLbl(l)] + randGen_aux(r,'H',n,S,H,D,T,MODEL,O_MODEL,X))
+                rand -= Loss(r)*H[lid][n]*X
+                if rand<0:
+                    return(randGen_aux(l,'H',n,S,H,D,T,MODEL,O_MODEL,X) + [LossLbl(r)])
+            for m in range(1,n):
+                rand -= H[lid][n-m]*H[rid][m]
+                if rand<0:
+                    return(randGen_aux(l,'H',n-m,S,H,D,T,MODEL,O_MODEL,X) + randGen_aux(r,'H',m,S,H,D,T,MODEL,O_MODEL,X))
+        if u.isUnary():
+            c = u.getChild()
+            cid = c.getID()
+            rand = random.random()*S[i][n]
+            rand -= H[cid][n]
+            if rand<0:
+                return(randGen_aux(c,'H',n,S,H,D,T,MODEL,O_MODEL,X))
+
+    return(None)
+
+def randGenHist(u,state="H",n=0,S=[],H=[],D=[],T=[],MODEL={'D':True,'L':True,'T':False},X=1.0):
+    return(randGen_aux(u,state,n,S,H,D,T,MODEL,HIST,X))
+
+def randGenRec(u,state="H",n=0,S=[],H=[],D=[],T=[],MODEL={'D':True,'L':True,'T':False},X=1.0):
+    return(randGen_aux(u,state,n,S,H,D,T,MODEL,REC,X))
+
+
 # ---------------------------------------------------------------------------
 
-USAGE = 'DLTcount <tree> <MODEL> <n>\n'+'tree = random k | rrandom k | caterpillar k | rcaterpillar k | complete h | rcomplete h | newick string\n'+'\trandom k = random binary tree with k leaves\n'+'\trrandom k = randomly ranked random binary tree with k leaves\n'+'\tcaterpillar k = caterpillar with k leaves\n'+'\trcaterpillar k = randomly ranked caterpillar with k leaves\n'+'\tcomplete h = complete binary tree with 2^h leaves\n'+'\trcomplete h = randomly ranked complete binary tree with 2^h leaves\n'+'\tnewick string = string is the Newick representation of a tree\n'+'MODEL = DL | DLT\n'+'n = history size\n'
+USAGE = 'DLTcount <tree> <MODEL> <OBJECT> <n> <number of samples>\n'+'tree = random k | rrandom k | caterpillar k | rcaterpillar k | balanced k | rbalanced k | newick string\n'+'\trandom k = random binary tree with k leaves\n'+'\trrandom k = randomly ranked random binary tree with k leaves\n'+'\tcaterpillar k = caterpillar with k leaves\n'+'\trcaterpillar k = randomly ranked caterpillar with k leaves\n'+'\tbalanced k = balanced binary tree with k leaves\n'+'\trbalanced k = randomly ranked balanced binary tree with k leaves\n'+'\tnewick string = string is the Newick representation of a tree\n'+'MODEL = DL | DLT\n'+'OBJECT = HISR | REC\n'+'n = history/reconciliation size\n'+'number of samples = non-negative integer, number of sampled histories/reconciliations'
 
 def getTree(s1,s2):
     if s1 == 'newick':
@@ -112,7 +201,7 @@ def getTree(s1,s2):
         elif s1 == 'caterpillar':
             tree = buildCaterpillar(k)
         elif s1 == 'complete':
-            tree = buildCompleteTree(k)
+            tree = buildBalancedTree(k)
         elif s1 == 'rrandom':
             tree_aux = randomOrderedBinaryTree(k)
             (ranking,tree) = rankTreeRandomly(tree_aux)
@@ -120,7 +209,7 @@ def getTree(s1,s2):
             tree_aux = buildCaterpillar(k)
             (ranking,tree) = rankTreeRandomly(tree_aux)
         elif s1 == 'rcomplete':
-            tree_aux = buildCompleteTree(k)
+            tree_aux = buildBalancedTree(k)
             (ranking,tree) = rankTreeRandomly(tree_aux)
         else:
             tree = newick2Tree(s1)
@@ -131,12 +220,11 @@ if __name__ == "__main__":
     tree_type = sys.argv[1]
     next_arg = 2
     tree = getTree(tree_type,sys.argv[next_arg])
-    next_arg += 1
     stree = tree.asNewick()
+    next_arg += 1
     
     # Reading the evolutionary model
     M = sys.argv[next_arg]
-    next_arg += 1
     if M == 'DL':
         MODEL={'D':True,'L':True,'T':False}
     elif M == 'DLT':
@@ -144,6 +232,18 @@ if __name__ == "__main__":
     else:
         print(USAGE)
         sys.exit()
+    next_arg += 1
+
+    # Reading the object model
+    O = sys.argv[next_arg]
+    if O == 'HIST':
+        O_MODEL=HIST
+    elif O == 'REC':
+        O_MODEL=REC
+    else:
+        print(USAGE)
+        sys.exit()
+    next_arg += 1
 
     # Reading the history size
     N = sys.argv[next_arg]
@@ -153,14 +253,37 @@ if __name__ == "__main__":
         print(USAGE)
         sys.exit()
     next_arg += 1
+
+    # Reading the sampling parameters
+    NBS = sys.argv[next_arg]
+    if NBS.isdigit():        
+        nbSamples = int(NBS)
+    else:
+        print(USAGE)
+        sys.exit()
     
     # Counting
     print('#Species tree: '+stree)
     print('#Model: '+M)
-    print('#History size: '+N)
-    print('#nb_histories\tnb_reconciliations')
-    Sh,Hh,Dh,Th = fillMatricesHist(tree,n,MODEL)
-    nbHistories = int(Hh[tree.getID()][n])
-    Sr,Hr,Dr,Tr = fillMatricesRec(tree,n,MODEL)
-    nbReconciliations = int(Hr[tree.getID()][n])
-    print(str(nbHistories)+'\t'+str(nbReconciliations))
+    if O_MODEL == HIST:
+        print('#History size: '+N)
+        S,H,D,T = fillMatricesHist(tree,n,MODEL)
+        nbHistories = int(H[tree.getID()][n])
+        print('Nb_histories\t'+str(nbHistories))
+        for s in range(nbSamples):
+            history = randGenHist(tree,'H',n,S,H,D,T,MODEL)
+            strHistory = str(history)
+            print('Sampled history '+str(s+1)+': '+strHistory)
+    elif O_MODEL == REC:
+        print('#Reconciliation size: '+N)
+        S,H,D,T = fillMatricesRec(tree,n,MODEL)
+        nbReconciliations = int(H[tree.getID()][n])
+        print('Nb_reconciliations\t'+str(nbReconciliations))
+        for s in range(nbSamples):
+            reconciliation = randGenRec(tree,'H',n,S,H,D,T,MODEL)
+            strReconciliation = str(reconciliation)
+            print('Sampled reconciliation '+str(s+1)+': '+strReconciliation)
+
+
+
+
